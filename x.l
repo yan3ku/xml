@@ -17,8 +17,13 @@
 }
 
 "<"[a-zA-Z0-9]+ {
-    yylval.str = strdup(yytext + 2); 
+    yylval.str = strdup(yytext + 1); 
     return STAG_BEG;
+}
+
+"</"[a-zA-Z0-9]+ {
+    yylval.str = strdup(yytext + 2);
+    return ETAG_BEG;
 }
 
 ">" {
