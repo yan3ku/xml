@@ -13,6 +13,7 @@ typedef enum {
     NODE_TX,
     NODE_PI,
 } NodeType;
+
 typedef struct Node {
     NodeType type;
     char *content;
