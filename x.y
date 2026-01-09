@@ -32,52 +32,35 @@ Node *root = NULL;
     Node *node;
 };
 
-%token <str> STAG_BEG ETAG_BEG PI_TAG_BEG
-%token <ch> S CHAR
-%token TAG_END ETAG_END PI_TAG_END
-%token NEWLINE
+%token <str>IDENT STRING_LIT
+%token PI_TAG_BEG "<?" PI_TAG_END "?>"
+%token END_TAG_START "</" EMPTY_TAG_END "/>"
+%token <str>TEXT
 
-%type <node>PROLOG
-%type <node>START_TAG
-%type <str>END_TAG
-%type <node>ELEMENT
-%type <node>CONTENT
-%type <node>EMPTY_TAG
 %%
-XDOC:   PROLOG NEWLINE ELEMENT NEWLINE              { $1->next = $3; root = $1; };
+XDOC:   PROLOG ELEMENT;
 
-PROLOG: PI_TAG_BEG PI_TAG_END               { $$ = mknode(NODE_PI, $1);  }
-|       %empty                              { $$ = NULL; }
+PROLOG: "<?" IDENT ATTR_LIST "?>" ;
+|       %empty
 ;
 
 ELEMENT: EMPTY_TAG
-|        START_TAG CONTENT END_TAG  {
-    if (strcmp($1->content, $3)) {
-        yyerror("Tag mismatch!");
-        YYERROR;
-    }
-    $$ = $1;
-    $$->child = $2;
-    free($3);
- }
+|        START_TAG CONTENT END_TAG ;
+
+CONTENT: CONTENT TEXT     ;
+|        CONTENT ELEMENT  ;
+|        %empty           ;
 ;
 
-CONTENT: CONTENT CHAR      { $$ = mknode(NODE_TX, "dummy"); }
-|        CONTENT NEWLINE   { $$ = mknode(NODE_TX, "dummy"); }
-|        CONTENT S         { $$ = mknode(NODE_TX, "dummy"); }
-|        CONTENT ELEMENT   { $$ = mknode(NODE_TX, "dummy"); }
-|        %empty            { $$ = mknode(NODE_TX, "dummy"); }
-;
+START_TAG: '<'  IDENT ATTR_LIST '>'  ;
+END_TAG:   "</" IDENT ATTR_LIST '>'  ;
+EMPTY_TAG: '<'  IDENT ATTR_LIST "/>" ;
 
- /*dummy right now*/
-ATTR_LIST: ATTR_LIST CHAR
-|          ATTR_LIST S
+ATTR_LIST: ATTR_LIST ATTR
 |          %empty
 ;
 
-START_TAG: STAG_BEG ATTR_LIST TAG_END    { $$ = mknode(NODE_EL, $1); };
-END_TAG:   ETAG_BEG ATTR_LIST TAG_END    { $$ = $1; };
-EMPTY_TAG: STAG_BEG ATTR_LIST ETAG_END   { $$ = mknode(NODE_EL, $1); };
+ATTR: IDENT '=' STRING_LIT ;
 
 %%
 Node *
