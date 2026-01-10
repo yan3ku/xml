@@ -28,7 +28,7 @@ IDENT [a-zA-Z][a-zA-Z0-9_.-]+
 <IN_TAG>">"    { BEGIN(INITIAL); return '>'; }
 
 
-<IN_TAG>{IDENT}       { yylval.str = yytext; return IDENT; }
+<IN_TAG>{IDENT}       { yylval.str = strdup(yytext); return IDENT; }
 <IN_TAG>=             { return '='; }
 <IN_TAG>\"            { BEGIN(STR); }
 <STR>([^\\\"]|\\.)*\" { BEGIN(IN_TAG); yylval.str = escape(); return STRING_LIT; }
@@ -53,7 +53,6 @@ transamp()
         *(esc++) = yytext[i++];
     }
     *esc = 0;
-    printf("TRANS: %s\n", esc0);
     return esc0;
 }
 

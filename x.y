@@ -38,24 +38,28 @@ Node *root = NULL;
 %token END_TAG_START "</" EMPTY_TAG_END "/>"
 %token <str>TEXT
 
+%type <node>EMPTY_TAG START_TAG
+%type <node>ELEMENT CONTENT
+%type <str>END_TAG
+
 %%
-XDOC:   PROLOG ELEMENT;
+XDOC: PROLOG ELEMENT         { root = $2; };   /* PROLOG ELEMENT; */
 
 PROLOG: "<?" IDENT ATTR_LIST "?>" ;
 |       %empty
 ;
 
-ELEMENT: EMPTY_TAG
-|        START_TAG CONTENT END_TAG ;
+ELEMENT: EMPTY_TAG                  { $$ = $1; }
+|        START_TAG CONTENT END_TAG  { $$ = $1; };
 
-CONTENT: CONTENT TEXT     ;
-|        CONTENT ELEMENT  ;
-|        %empty           ;
+CONTENT: CONTENT TEXT     { mknode(NODE_TX, $2); } ;
+|        CONTENT ELEMENT  { $2; } ;
+|        %empty           { $$ = NULL; };
 ;
 
-START_TAG: '<'  IDENT ATTR_LIST '>'  ;
-END_TAG:   "</" IDENT ATTR_LIST '>'  ;
-EMPTY_TAG: '<'  IDENT ATTR_LIST "/>" ;
+START_TAG: '<'  IDENT ATTR_LIST '>'  { $$ = mknode(NODE_EL, $2); } ;
+END_TAG:   "</" IDENT ATTR_LIST '>'  { $$ = $2; } ;
+EMPTY_TAG: '<'  IDENT ATTR_LIST "/>" { $$ = mknode(NODE_EL, $2); } ;
 
 ATTR_LIST: ATTR_LIST ATTR
 |          %empty
@@ -81,9 +85,9 @@ printdom(Node *node, int indent)
     if (!node) return;
     for (int i = 0; i < indent; i++) printf(" ");
     switch (node->type) {
-    case NODE_TX: printf("[ELEMENT] %s\n", node->content); break;
-    case NODE_EL: printf("[TEXT]    %s\n", node->content); break;
-    case NODE_PI: printf("[PI]      %s\n", node->content); break;
+    case NODE_EL: printf("[ELEM] %s\n", node->content); break;
+    case NODE_TX: printf("[TEXT] %s\n", node->content); break;
+    case NODE_PI: printf("[PI]   %s\n", node->content); break;
     }
     printdom(node->child, indent + 4);
     printdom(node->next, indent);
