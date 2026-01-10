@@ -10,21 +10,20 @@ char *transamp();
 
 IDENT [a-zA-Z][a-zA-Z0-9_.-]+
 
-%x TAG COMMENT QUOT APOS
+%x TAG COMM QUOT APOS
 %%
-[ \t\n]+       {}
+[ \t\n]+           {}
+"<?"               { BEGIN(TAG);  return PI_TAG_BEG; }
+"</"               { BEGIN(TAG);  return END_TAG_START; }
+"<"                { BEGIN(TAG);  return '<'; }
+"<!--"             { BEGIN(COMM); }
+<COMM>"-->"        { BEGIN(INITIAL); }
+<COMM>(.|\n)       {}
+[^<]+              { transamp(); return TEXT; }
 
-"<?"            { BEGIN(TAG);  return PI_TAG_BEG; }
-"</"            { BEGIN(TAG);  return END_TAG_START; }
-"<"             { BEGIN(TAG);  return '<'; }
-"<!--"          { BEGIN(COMMENT); }
-<COMMENT>"-->"  { BEGIN(INITIAL); }
-<COMMENT>(.|\n) {}
-[^<]+           { transamp(); return TEXT; }
-
-<TAG>"?>"       { BEGIN(INITIAL); return PI_TAG_END; }
-<TAG>"/>"       { BEGIN(INITIAL); return EMPTY_TAG_END; }
-<TAG>">"        { BEGIN(INITIAL); return '>'; }
+<TAG>"?>"          { BEGIN(INITIAL); return PI_TAG_END; }
+<TAG>"/>"          { BEGIN(INITIAL); return EMPTY_TAG_END; }
+<TAG>">"           { BEGIN(INITIAL); return '>'; }
 
 <TAG>{IDENT}       { yylval.str = strdup(yytext); return IDENT; }
 <TAG>=             { return '='; }
@@ -32,13 +31,13 @@ IDENT [a-zA-Z][a-zA-Z0-9_.-]+
 <TAG>\'            { BEGIN(APOS); }
 <TAG>(.|\n)        {}
 
-<QUOT>[^\"]*\"    { BEGIN(TAG); transamp(); return STRING_LIT; }
-<QUOT>(.|\n)      { yyerror("unrecognized char"); yyterminate(); }
-<QUOT><<EOF>>     { yyerror("unterminated string\n"); yyterminate(); }
+<QUOT>[^\"]*\"     { BEGIN(TAG); transamp(); return STRING_LIT; }
+<QUOT>(.|\n)       { yyerror("unrecognized char"); yyterminate(); }
+<QUOT><<EOF>>      { yyerror("no closing quote; start at\n"); yyterminate(); }
 
-<APOS>[^\']*\'    { BEGIN(TAG); transamp(); return STRING_LIT; }
-<APOS>(.|\n)      { yyerror("unrecognized char\n"); yyterminate(); }
-<APOS><<EOF>>     { yyerror("unterminated string\n"); yyterminate(); }
+<APOS>[^\']*\'     { BEGIN(TAG); transamp(); return STRING_LIT; }
+<APOS>(.|\n)       { yyerror("unrecognized char\n"); yyterminate(); }
+<APOS><<EOF>>      { yyerror("no closing apostroph\n"); yyterminate(); }
 
 %%
 

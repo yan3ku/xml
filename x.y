@@ -57,8 +57,6 @@ CONTENT: CONTENT TEXT     { Node *next = $1->next; $1->next = mknode(NODE_TX, $2
 |        %empty           { $$ = mknode(NODE_TX, ""); };
 ;
 
-CONTENT TEXT
-
 START_TAG: '<'  IDENT ATTR_LIST '>'  { $$ = mknode(NODE_EL, $2); } ;
 END_TAG:   "</" IDENT ATTR_LIST '>'  { $$ = $2; } ;
 EMPTY_TAG: '<'  IDENT ATTR_LIST "/>" { $$ = mknode(NODE_EL, $2); } ;
