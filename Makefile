@@ -6,12 +6,12 @@ LEX=flex
 	$(CC) $< $*.o $(LDFLAGS) -o $@
 
 %.tab.c %.tab.h: %.y
-	bison --debug -v -d $<
+	bison -Wcounterexamples --debug -v -d $<
 
 %.c: %.l %.tab.h
-	$(LEX) -t $< > $@
+	$(LEX) --debug -t $< > $@
 
 x: x.y x.l
 
 clean:
-	rm x x.tab.c x.tab.h
+	rm -f x lex.yy.c x.tab.c x.tab.h
