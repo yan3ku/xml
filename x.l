@@ -12,7 +12,6 @@ IDENT [a-zA-Z][a-zA-Z0-9_.-]+
 
 %x TAG COMM QUOT APOS
 %%
-[ \t\n]+           {}
 "<?"               { BEGIN(TAG);  return PI_TAG_BEG; }
 "</"               { BEGIN(TAG);  return END_TAG_START; }
 "<"                { BEGIN(TAG);  return '<'; }
